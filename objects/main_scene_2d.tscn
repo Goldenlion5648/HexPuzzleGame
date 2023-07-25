@@ -1,0 +1,21 @@
+[gd_scene load_steps=5 format=3 uid="uid://bvg1vjdjancxj"]
+
+[ext_resource type="Script" path="res://objects/main_scene_2d.gd" id="1_eqelo"]
+[ext_resource type="PackedScene" uid="uid://pjit0sytefu0" path="res://objects/half_offset_tilemap.tscn" id="1_ntxu8"]
+[ext_resource type="Script" path="res://objects/Camera2D.gd" id="2_57kei"]
+[ext_resource type="Script" path="res://objects/gridHolder.gd" id="3_exlpn"]
+
+[node name="main_scene2D" type="Node2D"]
+position = Vector2(8, 1)
+script = ExtResource("1_eqelo")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(-3, 3)
+script = ExtResource("2_57kei")
+
+[node name="gridHolder" type="Node2D" parent="."]
+script = ExtResource("3_exlpn")
+
+[node name="half_offset_tile_map" parent="gridHolder" instance=ExtResource("1_ntxu8")]
+position = Vector2(0, 0)
+layer_0/tile_data = PackedInt32Array(-196603, 131073, 131072, -131066, 1, 0, -65532, 1, 0, 0, 131073, 65536, -65533, 131073, 0)
