@@ -10,6 +10,15 @@ var adj6_corner_top = [[0, -1], [1, -1], [1, 0], [0, 1], [-1, 1], [-1, 0]]
 const flat_top_frequency = 60
 enum DIRECTION {ABOVE=0,UP=0,BELOW=1,DOWN=1,LEFT,RIGHT}
 
+var BASE_TILE_POS = Vector2i(2, 0)
+#these are the alternative ids bassed on the atlas 
+enum TILE_IDS {WALL=10, GOAL=9,END=9, START=1, BRIDGE=8}
+
+const layer_to_place_on = 0
+const source_id = 1
+
+var highest_distance_from_center = 3
+
 func _ready():
 	rotate_right.connect(on_rotate_right)
 	assert(DIRECTION.BELOW == DIRECTION.DOWN)
