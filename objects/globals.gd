@@ -5,7 +5,7 @@ extends Node
 signal rotate_right
 
 var current_grid_rotation = 0
-var rotation_increment = 30
+var rotation_increment = 60
 var adj6_flat_top = [Vector2i(0, -1), Vector2i(1, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 1), Vector2i(-1, 0)]
 var adj6_corner_top = [Vector2i(0, -1), Vector2i(1, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 1), Vector2i(-1, 0)]
 
@@ -20,9 +20,9 @@ enum HEX_CORNER {TOP_RIGHT_CORNER,RIGHT_CORNER,BOTTOM_RIGHT_CORNER,BOTTOM_LEFT_C
 var CORNER_TO_OFFSET = {HEX_CORNER.TOP_RIGHT_CORNER: Vector2i(0, -1),HEX_CORNER.RIGHT_CORNER: Vector2i(1, -1),HEX_CORNER.BOTTOM_RIGHT_CORNER: Vector2i(1, 0),HEX_CORNER.BOTTOM_LEFT_CORNER: Vector2i(0, 1),HEX_CORNER.LEFT_CORNER: Vector2i(-1, 1),HEX_CORNER.TOP_LEFT_CORNER: Vector2i(-1, 0)}
 
 
-var BASE_TILE_POS = Vector2i(2, 0)
+var BASE_TILE_POS_IN_ATLAS = Vector2i(2, 0)
 #these are the alternative ids bassed on the atlas 
-enum TILE_IDS {WALL=10, GOAL=9,END=9, START=1, BRIDGE=8}
+enum TILE_IDS {WALL=10, GOAL=9,END=9, START=1, BRIDGE=8, WHITE=0}
 
 const layer_to_place_on = 0
 const background_layer = 1
@@ -68,9 +68,10 @@ func has_pointed_top():
 	return not has_flat_top()
 
 func update_rotation_vars(direction=DIRECTION.RIGHT):
+	assert(direction in [DIRECTION.RIGHT, DIRECTION.LEFT], "direction should be left or right")
 	if direction == DIRECTION.RIGHT:
 		current_grid_rotation += rotation_increment
-	elif direction == DIRECTION.RIGHT:
+	elif direction == DIRECTION.LEFT:
 		current_grid_rotation -= rotation_increment
 		
 	# TODO if rotation is ever changed to less than 30 degrees at a time
@@ -91,6 +92,59 @@ func get_rotated_array(start: Array, direction:DIRECTION) -> Array:
 		temp = temp.slice(1) + [temp[0]]
 	return temp
 
+func read_from_level_data(level_num_to_load: int) -> Variant:
+	var level_json_file = "res://levels/level%02d/level_data.json" % level_num_to_load
+	var level_data = FileAccess.open(level_json_file, FileAccess.READ)
+	var data = JSON.parse_string(level_data.get_as_text())
+	return data
+	
+	
+
+func save_current_level(board: TileMap, available_to_place: Array[String]):
+	var level_data_file_only = "level_data.json"
+	var placeables_file_only = "placeables.txt"
+	var current_folder = null
+	var current_path = ""
+	for i in range(10):
+		current_folder = "res://levels/level%02d" % i
+		current_path = "%s/%s" % [current_folder, level_data_file_only]
+		if FileAccess.file_exists(current_path):
+			continue
+		break
+	assert(not FileAccess.file_exists(current_path))
+	DirAccess.make_dir_absolute(current_folder)
+	var hex_grid_data = FileAccess.open(current_path, FileAccess.WRITE)
+	var placeables_data = FileAccess.open(current_folder + "/" + placeables_file_only, FileAccess.WRITE)
+	
+	var tile_to_alt_id = {}
+	for i in range(-Globals.highest_distance_from_center, Globals.highest_distance_from_center + 1):
+		for j in range(-Globals.highest_distance_from_center, Globals.highest_distance_from_center + 1):
+			if board.get_cell_alternative_tile(background_layer, Vector2i(i, j)) == TILE_IDS.WHITE:
+				tile_to_alt_id[Vector2i(i, j)] = board.get_cell_alternative_tile(layer_to_place_on, Vector2i(i, j)) 
+	#rearrange so that tiles that are not empty appear at the top of the file
+	var sorted_version = {}
+	var sorted_keys = tile_to_alt_id.keys()
+	sorted_keys.sort_custom(func(a, b): return tile_to_alt_id[a] > tile_to_alt_id[b])
+	for key in sorted_keys:
+		sorted_version[key] = tile_to_alt_id[key]
+	var json_version = JSON.stringify(sorted_version, "    ", false)
+	hex_grid_data.store_line(json_version)
+	for placeable in available_to_place:
+		placeables_data.store_line(placeable)
+	# store a screenshot of the level
+	var image = get_viewport().get_texture().get_image()
+	image.save_png("%s/preview.png" % current_folder)
+
+func array_to_string(placeable_against_faces: Array):
+	var representation = []
+	for i in range(Globals.HEX_FACE.size()):
+		if i in placeable_against_faces:
+			representation.append(1)
+		else:
+			representation.append(0)
+			
+	return CustomHexagon.string_representation_sep.join(representation)
+	
 func get_walkable_around_coords(board: TileMap, pos: Vector2i) -> Array[Vector2i]:
 	var all_used_cells = board.get_used_cells(layer_to_place_on)
 	var all_spots_around = board.get_surrounding_cells(pos)

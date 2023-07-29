@@ -12,60 +12,41 @@ func _ready():
 
 	pass # Replace with function body.
 
-func save_current_level():
-	var level_data_file_only = "level_data.json"
-	var current_folder = null
-	var current_path = ""
-	for i in range(10):
-		current_folder = "res://levels/level%02d" % i
-		print("folder top is ", current_folder)
-		current_path = "%s/%s" % [current_folder, level_data_file_only]
-		print("current_path ", current_path)
-		if FileAccess.file_exists(current_path):
-			continue
-		break
-	assert(not FileAccess.file_exists(current_path))
-	DirAccess.make_dir_absolute(current_folder)
-	var file_writer = FileAccess.open(current_path, FileAccess.WRITE)
-	print("current file ", file_writer)
-	
-	print("folder is ", current_folder)
-	print("file to write outside is ", file_writer)
-	var tile_to_alt_id = {}
-	for i in range(-Globals.highest_distance_from_center, Globals.highest_distance_from_center + 1):
-		for j in range(-Globals.highest_distance_from_center, Globals.highest_distance_from_center + 1):
-			tile_to_alt_id[Vector2i(i, j)] = get_cell_alternative_tile(Globals.layer_to_place_on, Vector2i(i, j)) 
-	var sorted_version = {}
-	var sorted_keys = tile_to_alt_id.keys()
-	print(sorted_keys)
-	sorted_keys.sort_custom(func(a, b): return tile_to_alt_id[a] > tile_to_alt_id[b])
-	print(sorted_keys)
-#	return
-	for key in sorted_keys:
-		sorted_version[key] = tile_to_alt_id[key]
-	print(sorted_version)
-	var json_version = JSON.stringify(sorted_version, "    ", false)
-	file_writer.store_line(json_version)
-	var image = get_viewport().get_texture().get_image()
-	image.save_png("%s/preview.png" % current_folder)
+
 	
 
 func place_labels():
 	var tile_size = Vector2(101, 88)
-	var offset = tile_size / 3.0
+	var offset = tile_size / 2.0
+	var label_dim = Vector2i(82, 60)
 	print(offset)
 	for i in range(-Globals.highest_distance_from_center, Globals.highest_distance_from_center + 1):
 		for j in range(-Globals.highest_distance_from_center, Globals.highest_distance_from_center + 1):
 			if abs(i + j) >= Globals.highest_distance_from_center + 1:
 				continue
 			var current: Label = label.instantiate()
-			current.set_global_position(to_global(map_to_local(Vector2i(i, j))) - offset)
+			current.set_global_position(to_global(map_to_local(Vector2i(i, j))) + (label_dim ) / 4.0)
 #			print("label position ", current.position)
 			current.text = "%d %d" % [i, j]
 #			add_sibling.call_deferred(current)
 			var white_tile = 2
-			set_cell(Globals.background_layer, Vector2i(i, j), 1, Vector2i(white_tile, 0), alt_to_place)
+			set_cell(Globals.background_layer, Vector2i(i, j), Globals.source_id, 
+						Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.WHITE)
 			add_child.call_deferred(current)
+			
+
+func load_from_dict(json: Dictionary):
+	self.clear_layer(Globals.layer_to_place_on)
+	self.clear_layer(Globals.background_layer)
+	print(json)
+	for key in json:
+		var coords = str_to_var("Vector2" + key)
+		print(coords)
+		#setup the background
+		set_cell(Globals.background_layer, coords, Globals.source_id, 
+						Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.WHITE)
+		set_cell(Globals.layer_to_place_on, coords, Globals.source_id, 
+						Globals.BASE_TILE_POS_IN_ATLAS, json[key])
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func place_at_clicked_spot():
@@ -77,26 +58,30 @@ func place_at_clicked_spot():
 	
 	if Input.is_action_just_pressed("right_click"):
 		erase_cell(0, tile)
-	if Input.is_action_just_pressed("save_level"):
-		save_current_level()
+#	if Input.is_action_just_pressed("save_level"):
+#		Globals.save_current_level(self, )
+	if Input.is_action_just_pressed("load_level"):
+		load_from_dict(Globals.read_from_level_data(4))
 		
 	if Input.is_action_just_pressed("left_click"):
 		print("clicked position was ", tile)
-		print(tile)
 		var current_alt = get_cell_alternative_tile(Globals.background_layer, tile)
-		print("clicked on a tile with alt ", current_alt)
-		# outside of grid
+		# when the user clicks outside the grid
 		if current_alt == -1:
 			return
 		#TODO change this
-		var current_hexagon_to_place = CustomHexagon.new([Globals.HEX_FACE.BOTTOM_FACE], [])
+		print("hex face ", Globals.HEX_FACE)
+		print(typeof(Globals.HEX_FACE.values()))
+		print(typeof(Globals.HEX_FACE.values()))
+		var all_face_values : Array = Globals.HEX_FACE.values().duplicate(true)
+		var current_hexagon_to_place = CustomHexagon.new(all_face_values, [])
 		if current_hexagon_to_place.can_place_here(self, tile) == false:
 			return
 		
 		# the first parameter is the layer
 		# the second is the position
 		# change the fourth parameter to change what tile is placed
-		set_cell(Globals.layer_to_place_on, tile, 1, Globals.BASE_TILE_POS, Globals.TILE_IDS.BRIDGE)
+		set_cell(Globals.layer_to_place_on, tile, 1, Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.BRIDGE)
 		
 		var had_path = dfs(Vector2i(0, 0), Vector2i(1, -3))
 		print("had path ", had_path)

@@ -1,0 +1,50 @@
+[gd_scene load_steps=5 format=3 uid="uid://pjit0sytefu0"]
+
+[ext_resource type="Texture2D" uid="uid://clit1d6mvmcyt" path="res://assets/hex_grid.png" id="1_fftuq"]
+[ext_resource type="Script" path="res://objects/half_offset_tilemap.gd" id="3_eoj16"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_y5x2c"]
+texture = ExtResource("1_fftuq")
+margins = Vector2i(9, 8)
+separation = Vector2i(18, 0)
+texture_region_size = Vector2i(110, 96)
+1:0/next_alternative_id = 5
+1:0/0 = 0
+1:0/0/modulate = Color(1, 0.2, 1, 1)
+0:0/0 = 0
+2:0/next_alternative_id = 12
+2:0/0 = 0
+2:0/1 = 1
+2:0/1/modulate = Color(0.45098, 0.968627, 0.317647, 1)
+2:0/8 = 8
+2:0/8/modulate = Color(0.21875, 0.375, 0.957031, 1)
+2:0/9 = 9
+2:0/9/modulate = Color(0.746094, 0.0117188, 0.0585938, 1)
+2:0/10 = 10
+2:0/10/modulate = Color(0, 0, 0, 1)
+2:0/11 = 11
+
+[sub_resource type="TileSet" id="TileSet_lwri8"]
+tile_shape = 3
+tile_layout = 3
+tile_offset_axis = 1
+tile_size = Vector2i(102, 94)
+sources/1 = SubResource("TileSetAtlasSource_y5x2c")
+
+[node name="half_offset_tile_map" type="TileMap"]
+texture_filter = 1
+position = Vector2(5, 2)
+tile_set = SubResource("TileSet_lwri8")
+cell_quadrant_size = 2
+collision_visibility_mode = 1
+format = 2
+layer_0/name = "0"
+layer_0/tile_data = PackedInt32Array(-131071, 131073, 655360, -196607, 131073, 589824, 0, 131073, 65536)
+layer_1/name = "1"
+layer_1/enabled = true
+layer_1/modulate = Color(1, 1, 1, 1)
+layer_1/y_sort_enabled = false
+layer_1/y_sort_origin = 0
+layer_1/z_index = -5
+layer_1/tile_data = PackedInt32Array()
+script = ExtResource("3_eoj16")
