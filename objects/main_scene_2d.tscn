@@ -20,7 +20,7 @@ script = ExtResource("2_57kei")
 script = ExtResource("3_exlpn")
 
 [node name="half_offset_tile_map2" parent="gridHolder" instance=ExtResource("1_ntxu8")]
-position = Vector2(-50, -45)
+layer_2/z_index = 10
 
 [node name="level_maker_holder" type="CanvasGroup" parent="."]
 position = Vector2(-2, -69)

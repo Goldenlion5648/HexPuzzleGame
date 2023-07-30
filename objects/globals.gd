@@ -12,6 +12,8 @@ var adj6_corner_top = [Vector2i(0, -1), Vector2i(1, -1), Vector2i(1, 0), Vector2
 const flat_top_frequency = 60
 enum DIRECTION {ABOVE=0,UP=0,BELOW=1,DOWN=1,LEFT,RIGHT}
 
+const hexagon_side_count = 6
+
 
 enum HEX_FACE {TOP_FACE=0,TOP_RIGHT_FACE=1,BOTTOM_RIGHT_FACE=2,BOTTOM_FACE=3, BOTTOM_LEFT_FACE=4,TOP_LEFT_FACE=5}
 var FACE_TO_OFFSET = {HEX_FACE.TOP_FACE: Vector2i(0, -1),HEX_FACE.TOP_RIGHT_FACE: Vector2i(1, -1),HEX_FACE.BOTTOM_RIGHT_FACE: Vector2i(1, 0),HEX_FACE.BOTTOM_FACE: Vector2i(0, 1), HEX_FACE.BOTTOM_LEFT_FACE: Vector2i(-1, 1),HEX_FACE.TOP_LEFT_FACE: Vector2i(-1, 0)}
@@ -30,6 +32,30 @@ const source_id = 1
 
 var highest_distance_from_center = 3
 
+var current_hexagon_to_place : CustomHexagon
+const total_overlay_layers = 6
+const starting_overlay_layer = 2
+
+const pipe_sprites_source_id = 0
+const main_hexagon_sprite_source_id = 1
+
+const direction_to_pipe_atlas_coords_and_alt = {
+	HEX_FACE.TOP_FACE : [Vector2i(0, 0), 1],
+	HEX_FACE.TOP_RIGHT_FACE : [Vector2i(1, 0), 1],
+	HEX_FACE.BOTTOM_RIGHT_FACE : [Vector2i(1, 0), 2],
+	HEX_FACE.BOTTOM_FACE : [Vector2i(0, 0), 2],
+	HEX_FACE.BOTTOM_LEFT_FACE : [Vector2i(1, 0), 3],
+	HEX_FACE.TOP_LEFT_FACE : [Vector2i(1, 0), 4],
+}
+
+const face_to_grid_layer = {
+	HEX_FACE.TOP_FACE : 2,
+	HEX_FACE.TOP_RIGHT_FACE : 3,
+	HEX_FACE.BOTTOM_RIGHT_FACE : 4,
+	HEX_FACE.BOTTOM_FACE : 5,
+	HEX_FACE.BOTTOM_LEFT_FACE : 6,
+	HEX_FACE.TOP_LEFT_FACE : 7
+}
 
 
 #var current_placing = Hexagon.new()
@@ -37,6 +63,10 @@ var highest_distance_from_center = 3
 func _ready():
 	rotate_right.connect(on_rotate_right)
 	assert(DIRECTION.BELOW == DIRECTION.DOWN)
+
+func get_times_rotated_60():
+	return (current_grid_rotation / flat_top_frequency) % hexagon_side_count
+
 
 func get_tile_offsets_in_direction(direction: DIRECTION):
 	if has_flat_top():

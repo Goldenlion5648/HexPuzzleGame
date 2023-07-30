@@ -25,7 +25,6 @@ func place_labels():
 			if abs(i + j) >= Globals.highest_distance_from_center + 1:
 				continue
 			var current: Label = label.instantiate()
-			current.set_global_position(to_global(map_to_local(Vector2i(i, j))) + (label_dim ) / 4.0)
 #			print("label position ", current.position)
 			current.text = "%d %d" % [i, j]
 #			add_sibling.call_deferred(current)
@@ -33,6 +32,7 @@ func place_labels():
 			set_cell(Globals.background_layer, Vector2i(i, j), Globals.source_id, 
 						Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.WHITE)
 			add_child.call_deferred(current)
+			current.set_global_position(to_global(map_to_local(Vector2i(i, j))) + (label_dim ) / 4.0)
 			
 
 func load_from_dict(json: Dictionary):
@@ -71,27 +71,29 @@ func place_at_clicked_spot():
 			return
 		#TODO change this
 		print("hex face ", Globals.HEX_FACE)
-		print(typeof(Globals.HEX_FACE.values()))
-		print(typeof(Globals.HEX_FACE.values()))
 		var all_face_values : Array = Globals.HEX_FACE.values().duplicate(true)
-		var current_hexagon_to_place = CustomHexagon.new(all_face_values, [])
-		if current_hexagon_to_place.can_place_here(self, tile) == false:
+#		Globals.current_hexagon_to_place = CustomHexagon.new(all_face_values.slice(0, all_face_values.size(), 2), [])
+		Globals.current_hexagon_to_place = CustomHexagon.new([0], [])
+		if not Globals.current_hexagon_to_place.can_place_here(self, tile):
+			print("invalid placement, does not form connection")
 			return
 		
 		# the first parameter is the layer
 		# the second is the position
 		# change the fourth parameter to change what tile is placed
-		set_cell(Globals.layer_to_place_on, tile, 1, Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.BRIDGE)
-		
+		set_cell(Globals.layer_to_place_on, tile, Globals.main_hexagon_sprite_source_id, Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.BRIDGE)
+		place_pipes(Globals.current_hexagon_to_place, tile)
 		var had_path = dfs(Vector2i(0, 0), Vector2i(1, -3))
 		print("had path ", had_path)
-#
-#		print("above are", Globals.get_tile_offsets_in_direction(Globals.DIRECTION.ABOVE))
-#		print("right are", Globals.get_tile_offsets_in_direction(Globals.DIRECTION.RIGHT))
-#		print("down are", Globals.get_tile_offsets_in_direction(Globals.DIRECTION.DOWN))
-#		print("left are", Globals.get_tile_offsets_in_direction(Globals.DIRECTION.LEFT))
 
-
+func place_pipes(hexagon_being_placed: CustomHexagon, position_to_place_at: Vector2i):
+#	for layer in range(Globals.layer_to_place_on, Globals.layer_to_place_on + Globals.total_overlay_layers):
+	for face in hexagon_being_placed.placeable_against_faces:
+		var coords_and_alt = Globals.direction_to_pipe_atlas_coords_and_alt[posmod((face - Globals.get_times_rotated_60()), Globals.hexagon_side_count)]
+		var coords = coords_and_alt[0]
+		var alt = coords_and_alt[1]
+		set_cell(Globals.face_to_grid_layer[face], position_to_place_at, Globals.pipe_sprites_source_id, coords, alt)
+		
 	
 ## returns true if there is a path from "from" -> "to"
 ## false otherwise

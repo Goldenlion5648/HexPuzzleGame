@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://objects/simple_label.gd" id="1_6emlu"]
 
 [node name="simple_label" type="Label"]
+z_index = 50
 offset_right = 82.0
 offset_bottom = 60.0
 pivot_offset = Vector2(40, 30)
