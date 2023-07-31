@@ -1,40 +1,40 @@
-[gd_scene load_steps=7 format=3 uid="uid://pjit0sytefu0"]
+[gd_scene load_steps=7 format=3 uid="uid://bfsby0hi7bprk"]
 
-[ext_resource type="Texture2D" uid="uid://clit1d6mvmcyt" path="res://assets/hex_grid.png" id="1_fftuq"]
-[ext_resource type="Texture2D" uid="uid://dy7vprxje3bh4" path="res://assets/connection_lines.png" id="1_re4kg"]
-[ext_resource type="Script" path="res://objects/half_offset_tilemap.gd" id="3_eoj16"]
+[ext_resource type="Texture2D" uid="uid://dy7vprxje3bh4" path="res://assets/connection_lines.png" id="1_xgfp8"]
+[ext_resource type="Texture2D" uid="uid://clit1d6mvmcyt" path="res://assets/hex_grid.png" id="2_cq1oh"]
+[ext_resource type="Script" path="res://objects/placeable_tiles_display.gd" id="3_muh1f"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_6nblo"]
-texture = ExtResource("1_re4kg")
+texture = ExtResource("1_xgfp8")
 margins = Vector2i(9, 8)
 separation = Vector2i(18, 0)
 texture_region_size = Vector2i(110, 96)
 0:0/next_alternative_id = 3
 0:0/0 = 0
-0:0/0/modulate = Color(0.145098, 1, 0.184314, 1)
+0:0/0/modulate = Color(0.992157, 0.32549, 0, 1)
 0:0/1 = 1
-0:0/1/modulate = Color(0.145098, 1, 0.184314, 1)
+0:0/1/modulate = Color(0.992157, 0.32549, 0, 1)
 0:0/2 = 2
 0:0/2/flip_v = true
-0:0/2/modulate = Color(0.145098, 1, 0.184314, 1)
+0:0/2/modulate = Color(0.992157, 0.32549, 0, 1)
 1:0/next_alternative_id = 5
 1:0/0 = 0
-1:0/0/modulate = Color(0.145098, 1, 0.184314, 1)
+1:0/0/modulate = Color(0.992157, 0.32549, 0, 1)
 1:0/1 = 1
-1:0/1/modulate = Color(0.145098, 1, 0.184314, 1)
+1:0/1/modulate = Color(0.992157, 0.32549, 0, 1)
 1:0/2 = 2
 1:0/2/flip_v = true
-1:0/2/modulate = Color(0.145098, 1, 0.184314, 1)
+1:0/2/modulate = Color(0.992157, 0.32549, 0, 1)
 1:0/3 = 3
 1:0/3/flip_h = true
 1:0/3/flip_v = true
-1:0/3/modulate = Color(0.145098, 1, 0.184314, 1)
+1:0/3/modulate = Color(0.992157, 0.32549, 0, 1)
 1:0/4 = 4
 1:0/4/flip_h = true
-1:0/4/modulate = Color(0.145098, 1, 0.184314, 1)
+1:0/4/modulate = Color(0.992157, 0.32549, 0, 1)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_y5x2c"]
-texture = ExtResource("1_fftuq")
+texture = ExtResource("2_cq1oh")
 margins = Vector2i(9, 8)
 separation = Vector2i(18, 0)
 texture_region_size = Vector2i(110, 96)
@@ -56,13 +56,13 @@ texture_region_size = Vector2i(110, 96)
 
 [sub_resource type="TileSet" id="TileSet_lwri8"]
 tile_shape = 3
-tile_layout = 3
+tile_layout = 5
 tile_offset_axis = 1
 tile_size = Vector2i(102, 94)
 sources/1 = SubResource("TileSetAtlasSource_y5x2c")
 sources/0 = SubResource("TileSetAtlasSource_6nblo")
 
-[node name="half_offset_tile_map" type="TileMap"]
+[node name="placeable_tiles_display" type="TileMap"]
 texture_filter = 1
 position = Vector2(-50, -45)
 tile_set = SubResource("TileSet_lwri8")
@@ -70,14 +70,13 @@ cell_quadrant_size = 2
 collision_visibility_mode = 1
 format = 2
 layer_0/name = "main_layer"
-layer_0/tile_data = PackedInt32Array(-131071, 131073, 655360, -196607, 131073, 589824, 0, 131073, 65536)
 layer_1/name = "background"
 layer_1/enabled = true
 layer_1/modulate = Color(1, 1, 1, 1)
 layer_1/y_sort_enabled = false
 layer_1/y_sort_origin = 0
 layer_1/z_index = -5
-layer_1/tile_data = PackedInt32Array()
+layer_1/tile_data = PackedInt32Array(0, 131073, 0)
 layer_2/name = "overlay0"
 layer_2/enabled = true
 layer_2/modulate = Color(1, 1, 1, 1)
@@ -120,4 +119,10 @@ layer_7/y_sort_enabled = false
 layer_7/y_sort_origin = 0
 layer_7/z_index = 1
 layer_7/tile_data = PackedInt32Array()
-script = ExtResource("3_eoj16")
+script = ExtResource("3_muh1f")
+
+[node name="blink_timer" type="Timer" parent="."]
+wait_time = 0.6
+autostart = true
+
+[connection signal="timeout" from="blink_timer" to="." method="_on_blink_timer_timeout"]

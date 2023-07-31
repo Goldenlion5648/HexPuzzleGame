@@ -18,11 +18,11 @@ func _on_add_to_options_button_pressed():
 	var exposed_faces: Array[int] = []
 	for i in range(buttons.size()):
 #		buttons[i].has_focus()
-		print(buttons[i].button_pressed)
+#		print(buttons[i].button_pressed)
 		if buttons[i].button_pressed:
-			print("appeneded ", i)
+#			print("appeneded ", i)
 			exposed_faces.append(i)
-	print("exposed_faces ", exposed_faces)
+#	print("exposed_faces ", exposed_faces)
 	saved_hexes.append(Globals.array_to_string(exposed_faces))
 	
 

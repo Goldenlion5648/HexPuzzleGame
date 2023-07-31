@@ -9,9 +9,27 @@ const string_representation_sep = "_"
 func _init(_placeable_against_faces: Array, _placeable_against_corners: Array=[]):
 	placeable_against_faces = _placeable_against_faces.duplicate()
 	placeable_against_corners = _placeable_against_corners.duplicate()
+	
 
-func from_string(string: String) -> CustomHexagon:
-	return CustomHexagon.new((string.split(string_representation_sep) as Array[String]).map(func(x): return int(x)))
+static func from_binary_string(string: String) -> CustomHexagon:
+#	print("from string got ", string)
+	var split_up = string.split(string_representation_sep) as Array[String]
+#	print("split_up ", split_up)
+	var mapped = split_up.map(func(x): return int(x))
+#	print("mapped ", mapped)
+	var real = []
+	for i in range(Globals.hexagon_side_count):
+		if mapped[i] == 1:
+			real.append(i)
+	var result = CustomHexagon.new(real)
+#	print(result)
+	return result
+
+func is_used_up() -> bool:
+	return placeable_against_faces.size() == 0
+
+func set_as_used_up():
+	placeable_against_faces = []
 
 func _to_string():
 	var representation = []

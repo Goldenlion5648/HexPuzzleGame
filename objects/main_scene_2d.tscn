@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://bvg1vjdjancxj"]
+[gd_scene load_steps=8 format=3 uid="uid://bvg1vjdjancxj"]
 
 [ext_resource type="Script" path="res://objects/main_scene_2d.gd" id="1_eqelo"]
 [ext_resource type="PackedScene" uid="uid://pjit0sytefu0" path="res://objects/half_offset_tilemap.tscn" id="1_ntxu8"]
 [ext_resource type="Script" path="res://objects/Camera2D.gd" id="2_57kei"]
 [ext_resource type="Script" path="res://objects/gridHolder.gd" id="3_exlpn"]
+[ext_resource type="PackedScene" uid="uid://bfsby0hi7bprk" path="res://objects/placeable_tiles_display.tscn" id="5_nswmp"]
 [ext_resource type="Script" path="res://objects/level_maker_holder.gd" id="5_p7j2r"]
 [ext_resource type="Script" path="res://objects/added_so_far_label.gd" id="6_5wnpa"]
 
@@ -21,6 +22,9 @@ script = ExtResource("3_exlpn")
 
 [node name="half_offset_tile_map2" parent="gridHolder" instance=ExtResource("1_ntxu8")]
 layer_2/z_index = 10
+
+[node name="placeable_tiles_display" parent="." instance=ExtResource("5_nswmp")]
+position = Vector2(-685, -246)
 
 [node name="level_maker_holder" type="CanvasGroup" parent="."]
 position = Vector2(-2, -69)
