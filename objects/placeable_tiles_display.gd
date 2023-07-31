@@ -19,7 +19,7 @@ func reset_for_new_level():
 		erase_cell(Globals.background_layer, placing_at)
 	
 
-func on_tile_placed_in_main_grid(_args):
+func on_tile_placed_in_main_grid():
 	Globals.current_hexagon_to_place.set_as_used_up()
 	if Globals.available_hexagons.all(func(x): return x.is_used_up()):
 		Globals.current_hexagon_to_place = Globals.useless_hexagon

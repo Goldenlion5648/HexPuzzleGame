@@ -38,10 +38,6 @@ texture = ExtResource("1_fftuq")
 margins = Vector2i(9, 8)
 separation = Vector2i(18, 0)
 texture_region_size = Vector2i(110, 96)
-1:0/next_alternative_id = 5
-1:0/0 = 0
-1:0/0/modulate = Color(1, 0.2, 1, 1)
-0:0/0 = 0
 2:0/next_alternative_id = 12
 2:0/0 = 0
 2:0/1 = 1
@@ -52,7 +48,6 @@ texture_region_size = Vector2i(110, 96)
 2:0/9/modulate = Color(0.746094, 0.0117188, 0.0585938, 1)
 2:0/10 = 10
 2:0/10/modulate = Color(0, 0, 0, 1)
-2:0/11 = 11
 
 [sub_resource type="TileSet" id="TileSet_lwri8"]
 tile_shape = 3
@@ -77,7 +72,7 @@ layer_1/modulate = Color(1, 1, 1, 1)
 layer_1/y_sort_enabled = false
 layer_1/y_sort_origin = 0
 layer_1/z_index = -5
-layer_1/tile_data = PackedInt32Array()
+layer_1/tile_data = PackedInt32Array(0, 131073, 0, -196607, 131073, 0, -131071, 131073, 0)
 layer_2/name = "overlay0"
 layer_2/enabled = true
 layer_2/modulate = Color(1, 1, 1, 1)

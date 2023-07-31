@@ -32,3 +32,16 @@ func _on_save_level_button_pressed():
 
 func _on_reset_button_pressed():
 	pass # Replace with function body.
+
+
+func _on_debug_enable_checkbox_pressed():
+	get_viewport().set_input_as_handled()
+	print("editing mode: ", Globals.is_in_level_editing_mode )
+#	await get_tree().create_timer(1.0).timeout
+	Globals.is_in_level_editing_mode = $debug_enable_checkbox.button_pressed
+	print("editing mode: ", Globals.is_in_level_editing_mode )
+
+
+func _on_currently_placing_options_item_selected(index):
+	var current = $currently_placing_options.get_item_text(index)
+	Globals.current_level_maker_hex_to_place = Globals.TILE_IDS[current]

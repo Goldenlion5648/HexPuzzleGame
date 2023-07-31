@@ -9,10 +9,9 @@ var tile_id_to_place = 0
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	Globals.load_new_level.connect(load_hex_grid_for_new_level)
-	place_labels()
-	pass # Replace with function body.
+	place_labels_and_initial_tiles()
 
-func place_labels():
+func place_labels_and_initial_tiles():
 	var tile_size = Vector2(101, 88)
 	var offset = tile_size / 2.0
 	var label_dim = Vector2i(82, 60)
@@ -26,8 +25,8 @@ func place_labels():
 				current.text = "%d %d" % [i, j]
 	#			add_sibling.call_deferred(current)
 				var white_tile = 2
-				set_cell(Globals.background_layer, Vector2i(i, j), Globals.source_id, 
-							Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.WHITE)
+#				set_cell(Globals.background_layer, Vector2i(i, j), Globals.source_id, 
+#							Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.WHITE)
 				add_child.call_deferred(current)
 				current.set_global_position(to_global(map_to_local(Vector2i(i, j))) + (label_dim ) / 4.0)
 			
@@ -37,7 +36,7 @@ func load_hex_grid_for_new_level(_args):
 
 ## loads level data from a json (likely loaded from a file)
 func load_from_dict(json: Dictionary):
-	self.clear_layer(Globals.layer_to_place_on)
+	self.clear_layer(Globals.walkable_tiles_layer)
 	self.clear_layer(Globals.background_layer)
 #	print(json)
 	for key in json:
@@ -46,24 +45,22 @@ func load_from_dict(json: Dictionary):
 		#setup the background
 		set_cell(Globals.background_layer, coords, Globals.source_id, 
 						Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.WHITE)
-		set_cell(Globals.layer_to_place_on, coords, Globals.source_id, 
+		set_cell(Globals.walkable_tiles_layer, coords, Globals.source_id, 
 						Globals.BASE_TILE_POS_IN_ATLAS, json[key])
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func place_at_clicked_spot():
-	var erase_mode = false
-	if Input.is_action_pressed("shift"):
-		erase_mode = true
-	
 	var tile = local_to_map(to_local(get_global_mouse_position()))
 	
-	if Input.is_action_just_pressed("right_click"):
+	if Input.is_action_just_pressed("right_click") and Globals.is_in_level_editing_mode:
 		erase_cell(Globals.background_layer, tile)
+		erase_cell(Globals.walkable_tiles_layer, tile)
+		print("erased ", tile)
 #	if Input.is_action_just_pressed("save_level"):
-#		Globals.save_current_level(self, )
+#		Globals.save_current_level(self)
 	if Input.is_action_just_pressed("load_level"):
 #		
-		Globals.load_new_level.emit(8)
+		Globals.load_new_level.emit(Globals.get_newest_level())
 		print("current hex is ", Globals.current_hexagon_to_place)
 		
 	if Input.is_action_just_pressed("left_click"):
@@ -71,6 +68,10 @@ func place_at_clicked_spot():
 		var current_alt = get_cell_alternative_tile(Globals.background_layer, tile)
 		# when the user clicks outside the grid
 		if current_alt == -1:
+			if Globals.is_in_level_editing_mode:
+				set_cell(Globals.background_layer, tile, Globals.source_id, Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.WHITE)
+				if Globals.current_level_maker_hex_to_place != Globals.TILE_IDS.WHITE:
+					set_cell(Globals.walkable_tiles_layer, tile, Globals.source_id, Globals.BASE_TILE_POS_IN_ATLAS, Globals.current_level_maker_hex_to_place)
 			return
 		#TODO change this
 		print("hex face ", Globals.HEX_FACE)
@@ -84,7 +85,7 @@ func place_at_clicked_spot():
 		# the first parameter is the layer
 		# the second is the position
 		# change the fourth parameter to change what tile is placed
-		set_cell(Globals.layer_to_place_on, tile, Globals.main_hexagon_sprite_source_id, Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.BRIDGE)
+		set_cell(Globals.walkable_tiles_layer, tile, Globals.main_hexagon_sprite_source_id, Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.BRIDGE)
 		Globals.place_pipes(self, Globals.current_hexagon_to_place, tile)
 		Globals.cell_in_main_grid_changed.emit()
 		var had_path = dfs(Vector2i(0, 0), Vector2i(1, -3))
@@ -115,4 +116,7 @@ func dfs(from: Vector2i, to: Vector2i):
 		
 
 func _process(delta):
+	pass
+func _unhandled_input(event: InputEvent):
 	place_at_clicked_spot()
+	

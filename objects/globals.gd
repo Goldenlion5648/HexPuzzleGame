@@ -16,6 +16,8 @@ const hexagon_side_count = 6
 
 var current_level = 0
 
+var is_in_level_editing_mode = true 
+
 
 enum HEX_FACE {TOP_FACE=0,TOP_RIGHT_FACE=1,BOTTOM_RIGHT_FACE=2,BOTTOM_FACE=3, BOTTOM_LEFT_FACE=4,TOP_LEFT_FACE=5}
 var FACE_TO_OFFSET = {HEX_FACE.TOP_FACE: Vector2i(0, -1),HEX_FACE.TOP_RIGHT_FACE: Vector2i(1, -1),HEX_FACE.BOTTOM_RIGHT_FACE: Vector2i(1, 0),HEX_FACE.BOTTOM_FACE: Vector2i(0, 1), HEX_FACE.BOTTOM_LEFT_FACE: Vector2i(-1, 1),HEX_FACE.TOP_LEFT_FACE: Vector2i(-1, 0)}
@@ -27,8 +29,13 @@ var CORNER_TO_OFFSET = {HEX_CORNER.TOP_RIGHT_CORNER: Vector2i(0, -1),HEX_CORNER.
 var BASE_TILE_POS_IN_ATLAS = Vector2i(2, 0)
 #these are the alternative ids bassed on the atlas 
 enum TILE_IDS {WALL=10, GOAL=9,END=9, START=1, BRIDGE=8, WHITE=0}
+var current_level_maker_hex_to_place = TILE_IDS.WHITE
 
-const layer_to_place_on = 0
+#contains all the walkable tiles
+const walkable_tiles_layer = 0
+# the background layer indicates that a spot can be used in this level at all
+# that is, even the starting and ending squares should have a white tile
+# "behind" the red and green
 const background_layer = 1
 const source_id = 1
 
@@ -202,12 +209,22 @@ func read_from_level_data(level_num_to_load: int) -> Variant:
 	var tile_json_data = JSON.parse_string(level_data.get_as_text())
 	return tile_json_data
 	
-	
+func get_newest_level() -> int:
+	var current_folder = null
+	var current_path = ""
+	for i in range(30, -1, -1):
+		current_folder = "%s/level%02d" % [level_holder_folder_with_prefix, i]
+		current_path = "%s/%s" % [current_folder, level_data_file_name]
+		if not FileAccess.file_exists(current_path):
+			continue
+		return i
+	assert(false, "no levels exist")	
+	return -1
 
 func save_current_level(board: TileMap, available_to_place: Array[String]):
 	var current_folder = null
 	var current_path = ""
-	for i in range(10):
+	for i in range(30):
 		current_folder = "%s/level%02d" % [level_holder_folder_with_prefix, i]
 		current_path = "%s/%s" % [current_folder, level_data_file_name]
 		if FileAccess.file_exists(current_path):
@@ -222,7 +239,7 @@ func save_current_level(board: TileMap, available_to_place: Array[String]):
 	for i in range(-Globals.highest_distance_from_center, Globals.highest_distance_from_center + 1):
 		for j in range(-Globals.highest_distance_from_center, Globals.highest_distance_from_center + 1):
 			if board.get_cell_alternative_tile(background_layer, Vector2i(i, j)) == TILE_IDS.WHITE:
-				tile_to_alt_id[Vector2i(i, j)] = board.get_cell_alternative_tile(layer_to_place_on, Vector2i(i, j)) 
+				tile_to_alt_id[Vector2i(i, j)] = board.get_cell_alternative_tile(walkable_tiles_layer, Vector2i(i, j)) 
 	#rearrange so that tiles that are not empty appear at the top of the file
 	var sorted_version = {}
 	var sorted_keys = tile_to_alt_id.keys()
@@ -248,11 +265,11 @@ func array_to_string(placeable_against_faces: Array):
 	return CustomHexagon.string_representation_sep.join(representation)
 	
 func get_walkable_around_coords(board: TileMap, pos: Vector2i) -> Array[Vector2i]:
-	var all_used_cells = board.get_used_cells(layer_to_place_on)
+	var all_used_cells = board.get_used_cells(walkable_tiles_layer)
 	var all_spots_around = board.get_surrounding_cells(pos)
 	var ret: Array[Vector2i] = []
 	for spot in all_spots_around:
-		var alt_id = board.get_cell_alternative_tile(layer_to_place_on, spot)
+		var alt_id = board.get_cell_alternative_tile(walkable_tiles_layer, spot)
 #		print("spot ", spot, " has alt id ", alt_id)
 		if spot in all_used_cells and alt_id in [
 			Globals.TILE_IDS.BRIDGE,

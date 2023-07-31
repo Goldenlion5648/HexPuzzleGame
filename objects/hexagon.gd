@@ -13,11 +13,15 @@ func _init(_placeable_against_faces: Array, _placeable_against_corners: Array=[]
 
 static func from_binary_string(string: String) -> CustomHexagon:
 #	print("from string got ", string)
+#	assert(len(string) > 0, "no hexagons provided")
+	if len(string) == 0:
+		return CustomHexagon.new([])
 	var split_up = string.split(string_representation_sep) as Array[String]
-#	print("split_up ", split_up)
+	print("split_up ", split_up)
 	var mapped = split_up.map(func(x): return int(x))
 #	print("mapped ", mapped)
 	var real = []
+	print("mapped ", mapped)
 	for i in range(Globals.hexagon_side_count):
 		if mapped[i] == 1:
 			real.append(i)
