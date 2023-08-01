@@ -67,6 +67,7 @@ func place_at_clicked_spot():
 		print("clicked position was ", tile)
 		var current_alt = get_cell_alternative_tile(Globals.background_layer, tile)
 		# when the user clicks outside the grid
+		print("current_alt ", current_alt)
 		if current_alt == -1:
 			if Globals.is_in_level_editing_mode:
 				set_cell(Globals.background_layer, tile, Globals.source_id, Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.WHITE)
@@ -78,19 +79,43 @@ func place_at_clicked_spot():
 		var all_face_values : Array = Globals.HEX_FACE.values().duplicate(true)
 #		Globals.current_hexagon_to_place = CustomHexagon.new(all_face_values.slice(0, all_face_values.size(), 2), [])
 #		Globals.current_hexagon_to_place = CustomHexagon.new([0], [])
-		if not Globals.current_hexagon_to_place.can_place_here(self, tile):
-			print("invalid placement, does not form connection")
+		if get_cell_alternative_tile(Globals.walkable_tiles_layer, tile) == Globals.TILE_IDS.WALL or\
+		not Globals.current_hexagon_to_place.can_place_here(self, tile):
+			print("invalid placement, wall or does not form connection")
 			return
 		
 		# the first parameter is the layer
 		# the second is the position
 		# change the fourth parameter to change what tile is placed
-		set_cell(Globals.walkable_tiles_layer, tile, Globals.main_hexagon_sprite_source_id, Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.BRIDGE)
-		Globals.place_pipes(self, Globals.current_hexagon_to_place, tile)
-		Globals.cell_in_main_grid_changed.emit()
-		var had_path = dfs(Vector2i(0, 0), Vector2i(1, -3))
+		place_available_with_animation(tile)
+		var had_path = has_path_from_start_to_end()
 		print("had path ", had_path)
 
+func place_available_with_animation(tile: Vector2i):
+	set_cell(Globals.walkable_tiles_layer, tile, Globals.main_hexagon_sprite_source_id, Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.BRIDGE)
+	Globals.place_pipes(self, Globals.current_hexagon_to_place, tile)
+	var placed_faces = Globals.current_hexagon_to_place.placeable_against_faces
+	Globals.cell_in_main_grid_changed.emit()
+	var faces_to_iterate = Globals.HEX_FACE.values()
+	while faces_to_iterate[0] not in placed_faces:
+		faces_to_iterate = Globals.get_rotated_array(faces_to_iterate, Globals.DIRECTION.RIGHT)
+	for face in faces_to_iterate:
+		if face in placed_faces:
+			continue
+		Globals.place_pipes(self, CustomHexagon.new([face]), tile)
+		placed_faces.append(face)
+		await get_tree().create_timer(0.2).timeout
+
+
+func has_path_from_start_to_end() -> bool:
+	var starting_spots = get_used_cells_by_id(Globals.walkable_tiles_layer, Globals.source_id, Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.START)
+	var ending_spots = get_used_cells_by_id(Globals.walkable_tiles_layer, Globals.source_id, Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.GOAL)
+	for possible_starting_spot in starting_spots:
+		for possible_ending_spot in ending_spots:
+			if dfs(possible_starting_spot, possible_ending_spot):
+				return true
+	return false
+	
 	
 ## returns true if there is a path from "from" -> "to"
 ## false otherwise
@@ -105,7 +130,7 @@ func dfs(from: Vector2i, to: Vector2i):
 	while fringe.size() > 0:
 		cur = fringe.pop_back()
 #		print("cur ", cur)
-#		print("fringe, ", fringe)
+		print("fringe, ", fringe)
 		if cur in seen:
 			continue
 		seen[cur] = true

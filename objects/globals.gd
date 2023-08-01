@@ -106,6 +106,7 @@ func _ready():
 
 func on_load_new_level(level_num_to_load: int):
 	print("ran on_load_new_level, loading level ", level_num_to_load)
+	available_hexagons = []
 	current_level = level_num_to_load
 	read_from_level_data(level_num_to_load)
 	read_placeable_data(level_num_to_load)

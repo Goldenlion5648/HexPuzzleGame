@@ -31,7 +31,9 @@ func _on_save_level_button_pressed():
 
 
 func _on_reset_button_pressed():
-	pass # Replace with function body.
+	get_tree().reload_current_scene()
+	var level_editing_dummy_level = 999
+	Globals.load_new_level.emit(level_editing_dummy_level)
 
 
 func _on_debug_enable_checkbox_pressed():
