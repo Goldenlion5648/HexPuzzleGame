@@ -5,11 +5,16 @@ const label = preload("res://objects/simple_label.tscn")
 var alt_to_place = 0
 var tile_id_to_place = 0
 
+
 @onready var CustomHexagon = preload("res://objects/hexagon.gd")
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	Globals.MAIN_BOARD = self
 	Globals.load_new_level.connect(load_hex_grid_for_new_level)
 	place_labels_and_initial_tiles()
+	Globals.load_new_level.emit(2)
+	
+	
 
 func place_labels_and_initial_tiles():
 	var tile_size = Vector2(101, 88)
@@ -59,12 +64,10 @@ func place_at_clicked_spot():
 #	if Input.is_action_just_pressed("save_level"):
 #		Globals.save_current_level(self)
 	if Input.is_action_just_pressed("load_level"):
-#		
-		Globals.load_new_level.emit(Globals.get_newest_level())
-		print("current hex is ", Globals.current_hexagon_to_place)
+		Globals.load_new_level.emit(0)
+#		print("current hex is ", Globals.current_hexagon_to_place)
 		
 	if Input.is_action_just_pressed("left_click"):
-		print("clicked position was ", tile)
 		var current_alt = get_cell_alternative_tile(Globals.background_layer, tile)
 		# when the user clicks outside the grid
 		print("current_alt ", current_alt)
@@ -74,11 +77,11 @@ func place_at_clicked_spot():
 				if Globals.current_level_maker_hex_to_place != Globals.TILE_IDS.WHITE:
 					set_cell(Globals.walkable_tiles_layer, tile, Globals.source_id, Globals.BASE_TILE_POS_IN_ATLAS, Globals.current_level_maker_hex_to_place)
 			return
-		#TODO change this
-		print("hex face ", Globals.HEX_FACE)
-		var all_face_values : Array = Globals.HEX_FACE.values().duplicate(true)
-#		Globals.current_hexagon_to_place = CustomHexagon.new(all_face_values.slice(0, all_face_values.size(), 2), [])
-#		Globals.current_hexagon_to_place = CustomHexagon.new([0], [])
+		#when the cell is already occupied
+		var walkable_layer_alt = get_cell_alternative_tile(Globals.walkable_tiles_layer, tile)
+		print("walkable alt ", walkable_layer_alt)
+		if walkable_layer_alt != -1:
+			return
 		if get_cell_alternative_tile(Globals.walkable_tiles_layer, tile) == Globals.TILE_IDS.WALL or\
 		not Globals.current_hexagon_to_place.can_place_here(self, tile):
 			print("invalid placement, wall or does not form connection")
@@ -90,6 +93,9 @@ func place_at_clicked_spot():
 		place_available_with_animation(tile)
 		var had_path = has_path_from_start_to_end()
 		print("had path ", had_path)
+		if had_path:
+			Globals.level_complete.emit(self)
+			
 
 func place_available_with_animation(tile: Vector2i):
 	set_cell(Globals.walkable_tiles_layer, tile, Globals.main_hexagon_sprite_source_id, Globals.BASE_TILE_POS_IN_ATLAS, Globals.TILE_IDS.BRIDGE)

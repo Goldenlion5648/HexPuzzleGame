@@ -31,7 +31,7 @@ func _on_save_level_button_pressed():
 
 
 func _on_reset_button_pressed():
-	get_tree().reload_current_scene()
+#	get_tree().reload_current_scene()
 	var level_editing_dummy_level = 999
 	Globals.load_new_level.emit(level_editing_dummy_level)
 

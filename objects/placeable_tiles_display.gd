@@ -13,6 +13,7 @@ func _ready():
 #	Globals.load_new_level.connect(on_tile_placed_in_main_grid)
 
 func reset_for_new_level(_args):
+	#clear the available pipes to place
 	var max_possible_to_place = 10
 	for i in range(max_possible_to_place):
 		var placing_at = starting_position_to_place_at + Vector2i(i, i)

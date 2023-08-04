@@ -3,15 +3,18 @@ extends Node
 signal rotate_right
 signal load_new_level
 signal cell_in_main_grid_changed
+signal level_complete
 
 var current_grid_rotation = 0
 var rotation_increment = 60
 var adj6_flat_top = [Vector2i(0, -1), Vector2i(1, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 1), Vector2i(-1, 0)]
 var adj6_corner_top = [Vector2i(0, -1), Vector2i(1, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 1), Vector2i(-1, 0)]
 
+const EMPTY_LEVEL_NUMBER = 998
 const flat_top_frequency = 60
 enum DIRECTION {ABOVE=0,UP=0,BELOW=1,DOWN=1,LEFT,RIGHT}
 
+var MAIN_BOARD: TileMap = null
 const hexagon_side_count = 6
 
 var current_level = 0
@@ -70,8 +73,6 @@ var current_selected_hexagon_index = 0:
 		else:
 			current_hexagon_to_place = available_hexagons[value]
 		
-		
-
 const total_overlay_layers = 6
 const starting_overlay_layer = 2
 
@@ -101,6 +102,7 @@ func _ready():
 	rotate_right.connect(on_rotate_right)
 	assert(DIRECTION.BELOW == DIRECTION.DOWN)
 	load_new_level.connect(on_load_new_level)
+	level_complete.connect(on_level_complete)
 	print("connections: ", load_new_level.get_connections())
 #	load_new_level.emit(8)
 
@@ -108,11 +110,30 @@ func on_load_new_level(level_num_to_load: int):
 	print("ran on_load_new_level, loading level ", level_num_to_load)
 	available_hexagons = []
 	current_level = level_num_to_load
+	clear_all_tiles(MAIN_BOARD)	
 	read_from_level_data(level_num_to_load)
 	read_placeable_data(level_num_to_load)
 	print("current_hexagon_to_place ", current_hexagon_to_place)
 	print("available_hexagons ", available_hexagons)
+
+func clear_all_tiles(board_to_clear: TileMap):
+	var tile_size = Vector2(101, 88)
+	var offset = tile_size / 2.0
+	var label_dim = Vector2i(82, 60)
+	print(offset)
+	for i in range(-Globals.highest_distance_from_center, Globals.highest_distance_from_center + 1):
+		for j in range(-Globals.highest_distance_from_center, Globals.highest_distance_from_center + 1):
+			for layer in range(board_to_clear.get_layers_count()):
+				board_to_clear.erase_cell(layer, Vector2i(i, j))
+
+func on_level_complete(board_to_clear: TileMap):
+#	load_new_level.emit(EMPTY_LEVEL_NUMBER)
+	print("level ", current_level, "complete")
+	await get_tree().create_timer(1.5).timeout
+	current_level += 1
+	print("starting level ", current_level)
 	
+	load_new_level.emit(current_level)
 
 func get_times_rotated_60():
 	return (current_grid_rotation / flat_top_frequency) % hexagon_side_count
